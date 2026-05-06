@@ -23,11 +23,24 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MoreVerticalCircle01Icon, UserCircle02Icon, CreditCardIcon, Notification03Icon, Logout01Icon } from "@hugeicons/core-free-icons"
 import { useAuth } from "@/hooks/useAuth"
+import { axiosInstance } from "@/lib/api"
+import { useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const user = useAuth()
-  console.log(user)
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  async function handleLogout() {
+    try {
+      await axiosInstance.post("/users/logout")
+    } finally {
+      queryClient.removeQueries({ queryKey: ["userData"] })
+      router.replace("/login")
+    }
+  }
   
   return (
     <SidebarMenu>
@@ -64,7 +77,7 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleLogout}>
               <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} />
               Log out
             </DropdownMenuItem>
