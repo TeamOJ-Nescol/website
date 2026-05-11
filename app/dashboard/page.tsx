@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useGames, useGameStats } from "@/hooks/useGames";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const links = [
   {
@@ -34,6 +36,13 @@ function formatDate(value: string) {
 export default function Page() {
   const { data: stats } = useGameStats();
   const { data: games } = useGames();
+  const auth = useAuth()
+
+  useEffect(() => {
+    if (auth.user == null) {
+      window.location.replace("/login")
+    }
+  }, [])
 
   return (
     <div className="flex flex-col gap-6 px-4 lg:px-6">
