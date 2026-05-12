@@ -301,7 +301,7 @@ export function useDartStream() {
         ws.onopen = () => {
           // File playback uses a different websocket endpoint that ingests the
           // entire clip instead of a live frame-by-frame stream.
-          ws.send(JSON.stringify({ cam_id: 0, frame_skip: 2, ext }));
+          ws.send(JSON.stringify({ cam_id: selectedCamId, frame_skip: 2, ext }));
           ws.send(fileBytes);
           setStatus("connected");
           setShowRawPreview(true);

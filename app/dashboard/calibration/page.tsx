@@ -321,12 +321,19 @@ export default function CalibrationPage() {
 
   const cacheLatestCalibration = useCallback(async () => {
     try {
-      await postCacheAction("/calibration/cache", "Cached homography for normal gameplay.");
+      const payload = await postCacheAction(
+        "/calibration/cache",
+        "Cached homography for normal gameplay.",
+      );
       setCacheActive(true);
+      setHomographyReady(true);
+      setLastAction(
+        `Cached homography for source ${payload?.cam_id ?? camId} using ${payload?.points_detected ?? 4} markers.`,
+      );
     } catch (error) {
       setLastError(error instanceof Error ? error.message : "Unable to cache calibration");
     }
-  }, [postCacheAction]);
+  }, [camId, postCacheAction]);
 
   const clearCachedCalibration = useCallback(async () => {
     try {
