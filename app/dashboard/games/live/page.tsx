@@ -77,6 +77,8 @@ export default function LiveGamePage() {
     if (game.state && game.state !== "{}") {
       try {
         const parsed = JSON.parse(game.state);
+        // Only restore snapshots that match the persisted mode so a stale blob
+        // cannot hydrate the wrong scoreboard shape.
         if (parsed.mode === mode) {
           if (mode === "cricket" && Array.isArray(parsed.cricket)) {
             setCricket(parsed.cricket);
@@ -112,6 +114,8 @@ export default function LiveGamePage() {
       players?: { position: number; currentScore?: number; dartsThrown?: number }[],
     ) => {
       if (gameId == null) return;
+      // Persist both the mode-specific blob and flattened per-player fields so
+      // list views and stats do not need to parse game-state JSON.
       updateState.mutate({ id: gameId, state: snapshot, players });
     },
     [gameId, updateState],
@@ -126,6 +130,8 @@ export default function LiveGamePage() {
       nextState = prev.map((p, i) => {
         if (i !== currentPlayerIdx) return p;
         const newScore = p.score - roundTotal;
+        // Standard x01 bust rule: scores below zero or ending on 1 do not
+        // count, so we keep the pre-throw state.
         if (newScore < 0 || newScore === 1) return p;
         if (newScore === 0) nextWinner = p.name;
         return { ...p, score: newScore, history: [...p.history, latestScores.map(([s]) => s)] };
@@ -184,6 +190,8 @@ export default function LiveGamePage() {
           const newMarks = Math.min(cur.marks + multiplier, 3);
           updated.marks[score] = { marks: newMarks, closed: newMarks >= 3 };
           if (newMarks >= 3) {
+            // Only marks beyond closure score, and only while at least one
+            // opponent still has that number open.
             const othersOpen = prev.some((op, oi) => oi !== pi && !op.marks[score].closed);
             if (othersOpen) {
               const excess = cur.marks + multiplier - 3;
@@ -231,6 +239,8 @@ export default function LiveGamePage() {
   }, [playerNames.length, clearScores]);
 
   useEffect(() => {
+    // Auto-confirm once three darts are detected, but only while the hook is
+    // armed so a board with stuck darts cannot advance the game twice.
     if (winner || !armed || latestScores.length < AUTO_ADVANCE_DARTS) return;
     if (isCricket) confirmThrowCricket();
     else confirmThrow501();
@@ -239,6 +249,8 @@ export default function LiveGamePage() {
   useEffect(() => {
     if (!winner || finishedRef.current || gameId == null) return;
     finishedRef.current = true;
+    // Snapshot final per-player values before the finish mutation closes the
+    // game and the UI navigates away.
     const players = playerNames.map((name, position) => {
       const finalScore = isCricket
         ? cricket.find((p) => p.name === name)?.points ?? 0

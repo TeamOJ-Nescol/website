@@ -16,6 +16,8 @@ export const CRICKET_TARGETS: CricketTarget[] = [20, 19, 18, 17, 16, 15, 25];
 
 export function initCricketPlayer(name: string): PlayerCricket {
   const marks = {} as Record<CricketTarget, CricketMark>;
+  // Pre-seed every target so render code can index directly without undefined
+  // checks on the live scoreboard.
   CRICKET_TARGETS.forEach((t) => (marks[t] = { marks: 0, closed: false }));
   return { name, marks, points: 0, history: [] };
 }

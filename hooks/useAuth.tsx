@@ -38,6 +38,8 @@ function AuthProvider({ children }: any) {
             return await res.data;
         },
         retry: false,
+        // Avoid revalidating on every route transition while the auth cookie is
+        // still expected to be valid.
         staleTime: 1000 * 60 * 5,
     })
 
@@ -50,6 +52,8 @@ function AuthProvider({ children }: any) {
     }
 
     useEffect(() => {
+        // Redirect only after the session probe settles; otherwise protected
+        // pages would briefly bounce during the initial loading state.
         if (!value.isLoading && !value.isAuthenticated && !value.isPending) {
             router.replace("/login")
         }

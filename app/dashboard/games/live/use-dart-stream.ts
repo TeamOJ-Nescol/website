@@ -128,6 +128,8 @@ export function useDartStream() {
       if (!ctx) { captureLoopRef.current = requestAnimationFrame(tick); return; }
       cap.width = CONFIG.game.CAPTURE_WIDTH;
       cap.height = CONFIG.game.CAPTURE_HEIGHT;
+      // Normalize capture size before encoding so the inference server sees a
+      // consistent input geometry across cameras.
       ctx.drawImage(video, 0, 0, CONFIG.game.CAPTURE_WIDTH, CONFIG.game.CAPTURE_HEIGHT);
       sendingFrameRef.current = true;
 
@@ -137,6 +139,7 @@ export function useDartStream() {
         try {
           const bytes = await blob.arrayBuffer();
           if (streamingActiveRef.current && wsRef.current === ws && ws.readyState === WebSocket.OPEN) {
+            // Each frame should yield one JSON payload and one annotated image.
             responsePartsPendingRef.current = 2;
             ws.send(bytes);
           }
@@ -296,6 +299,8 @@ export function useDartStream() {
         ws.binaryType = "arraybuffer";
         wsRef.current = ws;
         ws.onopen = () => {
+          // File playback uses a different websocket endpoint that ingests the
+          // entire clip instead of a live frame-by-frame stream.
           ws.send(JSON.stringify({ cam_id: 0, frame_skip: 2, ext }));
           ws.send(fileBytes);
           setStatus("connected");
@@ -318,6 +323,8 @@ export function useDartStream() {
         ws.binaryType = "arraybuffer";
         wsRef.current = ws;
         ws.onopen = () => {
+          // The server uses the initial JSON message to select the capture
+          // source before binary frames start arriving.
           ws.send(JSON.stringify({ cam_id: selectedCamId }));
           setStatus("connected");
           setShowRawPreview(true);

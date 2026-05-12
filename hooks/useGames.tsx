@@ -79,6 +79,8 @@ export function useUpdateGameState() {
     }) =>
       (
         await axiosInstance.patch<Game>(`/games/${input.id}`, {
+          // The backend stores mode-specific state as a JSON string so the hook
+          // can send arbitrary live-game snapshots without a rigid schema here.
           state: JSON.stringify(input.state),
           players: input.players,
         })
@@ -102,6 +104,8 @@ export function useFinishGame() {
       (
         await axiosInstance.post<Game>(`/games/${input.id}/finish`, {
           winner: input.winner ?? null,
+          // Finish payload mirrors update payload, but `state` is optional
+          // because a winner can still be declared from flattened fields alone.
           state: input.state ? JSON.stringify(input.state) : undefined,
           players: input.players,
         })
