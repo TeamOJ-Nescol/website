@@ -27,6 +27,11 @@ const links = [
     title: "Test",
     description: "Test the dart detection stream.",
   },
+  {
+    href: "/dashboard/calibration",
+    title: "Calibration",
+    description: "Calibrate and cache board homography before live play.",
+  },
 ];
 
 function formatDate(value: string) {

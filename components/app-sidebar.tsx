@@ -42,6 +42,13 @@ const data = {
         <HugeiconsIcon icon={ChartHistogramIcon} strokeWidth={2} />
       ),
     },
+    {
+      title: "Calibration",
+      url: "/dashboard/calibration",
+      icon: (
+        <HugeiconsIcon icon={Camera01Icon} strokeWidth={2} />
+      ),
+    },
   ],
 }
 
